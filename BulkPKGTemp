@@ -1,0 +1,36 @@
+CREATE OR REPLACE PACKAGE PKG_[{PkgName}]
+AS
+   CURSOR CR_[{CrName}]
+   IS
+   SELECT 'x' FROM dual;
+   TYPE RW_[{CrName}] IS TABLE OF CR_[{CrName}]%ROWTYPE;
+END PKG_[{PkgName}];
+/
+
+CREATE OR REPLACE PACKAGE BODY PKG_[{PkgName}]
+AS
+   PROCEDURE START_INS AS
+      TEMP_RW   RW_[{CrName}];
+   BEGIN
+      IF (CR_[{CrName}]%ISOPEN)
+      THEN
+         CLOSE CR_[{CrName}];
+      END IF;
+      OPEN CR_[{CrName}];
+      LOOP
+         FETCH CR_[{CrName}] BULK COLLECT INTO TEMP_RW LIMIT 1000;
+         /*bulk 
+            forall rw in 1..TEMP_RW.count
+            insert or update satatment
+         */
+         /*looping  
+            for rw in 1..TEMP_RW.count
+            loop  
+            insert or update satatment 
+            end  loop  
+         */
+         EXIT WHEN CR_[{CrName}]%NOTFOUND;
+      END LOOP;
+      CLOSE CR_[{CrName}];
+   END START_INS;
+END PKG_[{PkgName}];
